@@ -1,1 +1,17 @@
+cooldown-seconds: 300
+cost: 100.0
+min-radius: 500
+max-radius: 5000
+blacklisted-worlds: []
 
+messages:
+  player-only: "<red>Only players can use this command."
+  no-permission: "<red>You don't have permission."
+  blacklisted-world: "<red>You can't use /rtp in this world."
+  cooldown: "<red>Wait <yellow><time></yellow> before using /rtp again."
+  not-enough-money: "<red>You need <yellow>$<cost></yellow> to use /rtp."
+  already-pending: "<red>Teleport already in progress."
+  teleporting: "<gray>Teleporting..."
+  success: "<green>Teleported! <gray>(Charged $<cost>)"
+  failed: "<red>Teleport failed. You were not charged."
+  reloaded: "<green>SimpleRTP config reloaded."
