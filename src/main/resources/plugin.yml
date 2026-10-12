@@ -1,1 +1,19 @@
-
+name: SimpleRTP
+version: '1.0.0'
+main: dev.rtp.RtpPlugin
+api-version: '26.2'
+depend: [Vault]
+commands:
+  rtp:
+    description: Randomly teleport
+    usage: /rtp
+    aliases: [randomtp, wild]
+permissions:
+  rtp.use:
+    default: true
+  rtp.bypass.cooldown:
+    default: op
+  rtp.bypass.cost:
+    default: op
+  rtp.reload:
+    default: op
