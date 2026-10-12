@@ -14,7 +14,8 @@ repositories {
 dependencies {
     // Adjust to the exact Paper build for your 26.2 server (see https://papermc.io/downloads/paper)
     compileOnly("io.papermc.paper:paper-api:26.2.build.+")
-    compileOnly("com.github.MilkBowl:VaultAPI:1.7")
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
+    isTransitive = false
 }
 
 java {
