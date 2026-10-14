@@ -36,6 +36,9 @@ destinations:
     slot: 13
     min-radius: 100
     max-radius: 1000
+    ground-scan: true
+    scan-max-y: 120
+    scan-min-y: 33
   end:
     enabled: true
     environment: THE_END
