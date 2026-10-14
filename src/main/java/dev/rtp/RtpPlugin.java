@@ -79,14 +79,37 @@ public final class RtpPlugin extends JavaPlugin implements Listener {
         return MM.deserialize(raw, resolvers);
     }
 
+    private static final String CHAT_COLOR = "<color:#00a2ff>";
+
     private Component msg(String key, Map<String, String> placeholders) {
-        return parse(getConfig().getString("messages." + key, key), placeholders);
+        String raw = smallCaps(getConfig().getString("messages." + key, key));
+        Map<String, String> converted = new HashMap<>();
+        placeholders.forEach((k, v) -> converted.put(k, smallCaps(v)));
+        return parse(CHAT_COLOR + raw, converted);
     }
 
     private Component msg(String key) {
         return msg(key, Map.of());
     }
 
+    /** Converts letters to small caps, leaving MiniMessage tags like <time> untouched. */
+    private static String smallCaps(String input) {
+        final String from = "abcdefghijklmnopqrstuvwxyz";
+        final String to = "ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀꜱᴛᴜᴠᴡxʏᴢ";
+        StringBuilder out = new StringBuilder();
+        boolean inTag = false;
+        for (char c : input.toCharArray()) {
+            if (c == '<') inTag = true;
+            if (inTag) {
+                out.append(c);
+            } else {
+                int i = from.indexOf(Character.toLowerCase(c));
+                out.append(i >= 0 ? to.charAt(i) : c);
+            }
+            if (c == '>') inTag = false;
+        }
+        return out.toString();
+    }
     // ---------- helpers ----------
 
     private World findWorld(ConfigurationSection sec) {
