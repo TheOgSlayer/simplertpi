@@ -1,17 +1,60 @@
+# One cooldown shared by all destinations (seconds)
 cooldown-seconds: 300
+
+# Cost per teleport. Charged only after a successful teleport.
 cost: 100.0
-min-radius: 500
-max-radius: 5000
-blacklisted-worlds: []
+
+gui:
+  title: "<dark_gray>Random Teleport"
+  filler: GRAY_STAINED_GLASS_PANE   # set to AIR to disable
+  lore:
+    - "<!italic><gray>Range: <white><min>-<max> blocks"
+    - "<!italic><gray>Cost: <yellow><cost>"
+    - "<!italic><gray>Cooldown: <white><cooldown>"
+    - ""
+    - "<!italic><green>Click to teleport!"
+
+# Each destination: the world is found by environment (NORMAL, NETHER, THE_END).
+# Set "world" to an exact world name to override.
+# Radius is measured from the world border center.
+destinations:
+  overworld:
+    enabled: true
+    environment: NORMAL
+    world: ""
+    display-name: "<green>Overworld"
+    icon: GRASS_BLOCK
+    slot: 11
+    min-radius: 500
+    max-radius: 5000
+  nether:
+    enabled: true
+    environment: NETHER
+    world: ""
+    display-name: "<red>Nether"
+    icon: NETHERRACK
+    slot: 13
+    min-radius: 100
+    max-radius: 1000
+  end:
+    enabled: true
+    environment: THE_END
+    world: ""
+    display-name: "<light_purple>The End"
+    icon: END_STONE
+    slot: 15
+    min-radius: 0
+    max-radius: 60
 
 messages:
   player-only: "<red>Only players can use this command."
   no-permission: "<red>You don't have permission."
-  blacklisted-world: "<red>You can't use /rtp in this world."
+  world-no-permission: "<red>You don't have permission to teleport there."
+  unavailable: "<red>That destination isn't available."
   cooldown: "<red>Wait <yellow><time></yellow> before using /rtp again."
-  not-enough-money: "<red>You need <yellow>$<cost></yellow> to use /rtp."
+  not-enough-money: "<red>You need <yellow><cost></yellow> to use /rtp."
   already-pending: "<red>Teleport already in progress."
   teleporting: "<gray>Teleporting..."
-  success: "<green>Teleported! <gray>(Charged $<cost>)"
+  success: "<green>Teleported to <world><green>! <gray>(Charged <cost>)"
   failed: "<red>Teleport failed. You were not charged."
   reloaded: "<green>SimpleRTP config reloaded."
