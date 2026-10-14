@@ -330,7 +330,7 @@ public final class RtpPlugin extends JavaPlugin implements Listener {
         int z = (int) Math.floor(center.getZ() + Math.sin(angle) * radius);
         float yaw = player.getLocation().getYaw();
         float pitch = player.getLocation().getPitch();
-        String worldName = sec.getString("display-name", key);
+        String worldName = MM.stripTags(sec.getString("display-name", key));
 
         pending.add(id);
         player.sendMessage(msg("teleporting"));
