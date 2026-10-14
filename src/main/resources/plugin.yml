@@ -6,10 +6,16 @@ depend: [Vault]
 commands:
   rtp:
     description: Randomly teleport
-    usage: /rtp
+    usage: /rtp [overworld|nether|end]
     aliases: [randomtp, wild]
 permissions:
   rtp.use:
+    default: true
+  rtp.world.overworld:
+    default: true
+  rtp.world.nether:
+    default: true
+  rtp.world.end:
     default: true
   rtp.bypass.cooldown:
     default: op
