@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.CompletableFuture;
 
 public final class RtpPlugin extends JavaPlugin implements Listener {
 
@@ -282,6 +283,8 @@ public final class RtpPlugin extends JavaPlugin implements Listener {
 
     // ---------- teleport (no safe-location search) ----------
 
+        // ---------- teleport ----------
+
     private void teleport(Player player, String key) {
         if (!player.hasPermission("rtp.use")) {
             player.sendMessage(msg("no-permission"));
@@ -322,12 +325,6 @@ public final class RtpPlugin extends JavaPlugin implements Listener {
         }
 
         int[] r = radii(sec, world);
-        ThreadLocalRandom rnd = ThreadLocalRandom.current();
-        double angle = rnd.nextDouble(0, Math.PI * 2);
-        double radius = rnd.nextDouble(r[0], r[1]);
-        Location center = world.getWorldBorder().getCenter();
-        int x = (int) Math.floor(center.getX() + Math.cos(angle) * radius);
-        int z = (int) Math.floor(center.getZ() + Math.sin(angle) * radius);
         float yaw = player.getLocation().getYaw();
         float pitch = player.getLocation().getPitch();
         String worldName = MM.stripTags(sec.getString("display-name", key));
@@ -335,9 +332,11 @@ public final class RtpPlugin extends JavaPlugin implements Listener {
         pending.add(id);
         player.sendMessage(msg("teleporting"));
 
-        world.getChunkAtAsync(x >> 4, z >> 4).thenCompose(chunk -> {
-            int y = world.getHighestBlockYAt(x, z) + 1;
-            return player.teleportAsync(new Location(world, x + 0.5, y, z + 0.5, yaw, pitch));
+        findSpot(world, sec, r, 15).thenCompose(loc -> {
+            if (loc == null) return CompletableFuture.completedFuture(false);
+            loc.setYaw(yaw);
+            loc.setPitch(pitch);
+            return player.teleportAsync(loc);
         }).thenAccept(success -> {
             pending.remove(id);
             if (success) {
@@ -352,6 +351,39 @@ public final class RtpPlugin extends JavaPlugin implements Listener {
             player.sendMessage(msg("failed"));
             getLogger().warning("RTP failed: " + ex.getMessage());
             return null;
+        });
+    }
+
+    /**
+     * Picks a random X/Z and a Y. Normal mode: top of the highest block (no checks).
+     * With ground-scan: true (used for the Nether), scans downward from scan-max-y
+     * for open floor, and retries with new coordinates if the column is solid.
+     */
+    private CompletableFuture<Location> findSpot(World world, ConfigurationSection sec, int[] r, int triesLeft) {
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        double angle = rnd.nextDouble(0, Math.PI * 2);
+        double radius = rnd.nextDouble(r[0], r[1]);
+        Location center = world.getWorldBorder().getCenter();
+        int x = (int) Math.floor(center.getX() + Math.cos(angle) * radius);
+        int z = (int) Math.floor(center.getZ() + Math.sin(angle) * radius);
+        boolean scan = sec.getBoolean("ground-scan", false);
+
+        return world.getChunkAtAsync(x >> 4, z >> 4).thenCompose(chunk -> {
+            if (!scan) {
+                int y = world.getHighestBlockYAt(x, z) + 1;
+                return CompletableFuture.completedFuture(new Location(world, x + 0.5, y, z + 0.5));
+            }
+            int maxY = Math.min(sec.getInt("scan-max-y", 120), world.getMaxHeight() - 2);
+            int minY = Math.max(sec.getInt("scan-min-y", 33), world.getMinHeight() + 1);
+            for (int y = maxY; y >= minY; y--) {
+                if (world.getBlockAt(x, y - 1, z).getType().isSolid()
+                        && world.getBlockAt(x, y, z).getType().isAir()
+                        && world.getBlockAt(x, y + 1, z).getType().isAir()) {
+                    return CompletableFuture.completedFuture(new Location(world, x + 0.5, y, z + 0.5));
+                }
+            }
+            if (triesLeft <= 1) return CompletableFuture.<Location>completedFuture(null);
+            return findSpot(world, sec, r, triesLeft - 1);
         });
     }
 }
